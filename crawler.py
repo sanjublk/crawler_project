@@ -39,6 +39,8 @@ def get_artists(base):
     headings = tracklist.find_all("h3")
     if headings:
         logger.debug("artist list parsed successfully")
+    else:
+        logger.debug("could'nt parse headings successfully")
     for heading in headings:
         artists[heading.text] = heading.a["href"]
     return artists
@@ -55,6 +57,8 @@ def get_song_list(base):
     links = tracklist.find_all("a")
     if links:
         logger.debug("song list parsed successfully")
+    else:
+        logger.debug("could'nt parse headings successfully")
     for link in links:
         songs[link.text] = link["href"]
     return songs
@@ -70,7 +74,7 @@ def get_lyrics(base):
     if lyrics:
         logger.debug("lyrics parsed successfully")
     else:
-        logger.critical("could'nt parse lyrics successfully")
+        logger.debug("could'nt parse lyrics successfully")
     return lyrics.text
 
 
