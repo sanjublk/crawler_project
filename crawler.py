@@ -29,7 +29,7 @@ def configure_logging(level=logging.INFO):
 
 
 def get_artists(base):
-    """gives a dictory of artists with url to their song list"""
+    """returns a dictionary of artists with the url to their song list"""
     artists = {}
     logger.debug(f"requesting {base} ...")
     res = requests.get(base)
@@ -43,19 +43,36 @@ def get_artists(base):
         artists[heading.text] = heading.a["href"]
     return artists
 
+
 def get_song_list(base):
+    """returns a dictionary of songs with the url to the song lyrics"""
     songs = {}
     logger.debug(f"requesting {base} ...")
     res = requests.get(base)
     logger.debug(f"status code: {res.status_code}")
     soup = BeautifulSoup(res.content, "lxml")
     tracklist = soup.find("table", attrs={"class": "tracklist"})
-    links = tracklist.find_all('a')
+    links = tracklist.find_all("a")
     if links:
         logger.debug("song list parsed successfully")
     for link in links:
         songs[link.text] = link["href"]
     return songs
+
+
+def get_lyrics(base):
+    "returns song lyrics parsed from the given url"
+    logger.debug(f"requesting {base} ...")
+    res = requests.get(base)
+    logger.debug(f"status code: {res.status_code}")
+    soup = BeautifulSoup(res.content, "lxml")
+    lyrics = soup.find("p", attrs={"id": "songLyricsDiv"})
+    if lyrics:
+        logger.debug("lyrics parsed successfully")
+    else:
+        logger.critical("could'nt parse lyrics successfully")
+    return lyrics.text
+
 
 def main():
     args = parse_args()
