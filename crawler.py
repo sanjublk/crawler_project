@@ -1,6 +1,9 @@
 import argparse
 import logging
 
+from bs4 import BeautifulSoup
+import requests
+
 logger = None
 
 
@@ -25,12 +28,20 @@ def configure_logging(level=logging.INFO):
     logger.addHandler(screen_handler)
 
 
-def crawl():
-    logger.debug("Crawling starting")
-    for i in range(10):
-        logger.debug("Fetching URL %s", i)
-        print("https://....")
-    logger.debug("Completed crawling")
+def get_artists(base):
+    """gives a dictory of artists with url to their song list"""
+    artists = {}
+    logger.debug(f"requesting {base} ...")
+    res = requests.get(base)
+    logger.debug(f"status code: {res.status_code}")
+    soup = BeautifulSoup(res.content, "lxml")
+    tracklist = soup.find("table", attrs={"class": "tracklist"})
+    headings = tracklist.find_all("h3")
+    if headings:
+        logger.debug("artist list parsed successfully")
+    for heading in headings:
+        artists[heading.text] = heading.a["href"]
+    return artists
 
 
 def main():
@@ -40,7 +51,7 @@ def main():
     else:
         configure_logging(logging.INFO)
 
-    crawl()
+    artists = get_artists("https://www.songlyrics.com/top-artists-lyrics.html")
 
 
 if __name__ == "__main__":
