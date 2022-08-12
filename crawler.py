@@ -43,6 +43,19 @@ def get_artists(base):
         artists[heading.text] = heading.a["href"]
     return artists
 
+def get_song_list(base):
+    songs = {}
+    logger.debug(f"requesting {base} ...")
+    res = requests.get(base)
+    logger.debug(f"status code: {res.status_code}")
+    soup = BeautifulSoup(res.content, "lxml")
+    tracklist = soup.find("table", attrs={"class": "tracklist"})
+    links = tracklist.find_all('a')
+    if links:
+        logger.debug("song list parsed successfully")
+    for link in links:
+        songs[link.text] = link["href"]
+    return songs
 
 def main():
     args = parse_args()
