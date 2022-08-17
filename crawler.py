@@ -88,6 +88,7 @@ def get_lyrics(url: str) -> str:
 
 
 def download_lyrics(download_dir: str, count: int, base_url: str):
+    '''downloads song lyrics into artist directory inside given download_dir'''
     artists = get_artists("https://www.songlyrics.com/top-artists-lyrics.html", count)
     
     for artist, url in artists.items():
