@@ -9,11 +9,12 @@ logger = None
 
 
 def generate_name(name: str) -> str:
-    '''returns a new string after replacing undesired chars with '-' '''
-    char_to_replace = ['/', ' ']
+    """returns a new string after replacing undesired chars with '-'"""
+    char_to_replace = ["/", " "]
     for char in char_to_replace:
-        name = name.replace(char, '-')
+        name = name.replace(char, "-")
     return name.lower()
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Web crawler")
@@ -21,10 +22,18 @@ def parse_args():
         "-d", "--debug", help="Enable debug logging", action="store_true"
     )
     parser.add_argument(
-        "-c", "--count", type=int, help="Number of artists and songs to crawl", default=2
+        "-c",
+        "--count",
+        type=int,
+        help="Number of artists and songs to crawl",
+        default=2,
     )
     parser.add_argument(
-       "-u", "--url", type=str, help="Base url for artist list", default= "https://www.songlyrics.com/top-artists-lyrics.html"
+        "-u",
+        "--url",
+        type=str,
+        help="Base url for artist list",
+        default="https://www.songlyrics.com/top-artists-lyrics.html",
     )
     return parser.parse_args()
 
@@ -42,7 +51,7 @@ def configure_logging(level=logging.INFO):
     logger.addHandler(screen_handler)
 
 
-def get_artists(base: str, count: int=2) -> dict:
+def get_artists(base: str, count: int = 2) -> dict:
     """returns a dictionary of artists with the url to their song list"""
     artists = {}
     logger.debug(f"requesting {base} ...")
@@ -58,7 +67,7 @@ def get_artists(base: str, count: int=2) -> dict:
     return artists
 
 
-def get_song_list(url: str, count: int=2) -> dict:
+def get_song_list(url: str, count: int = 2) -> dict:
     """returns a dictionary of songs with the url to the song lyrics"""
     songs = {}
     logger.debug(f"requesting {url} ...")
@@ -72,6 +81,7 @@ def get_song_list(url: str, count: int=2) -> dict:
     for link in links[0:count]:
         songs[link.text] = link["href"]
     return songs
+
 
 def get_lyrics(url: str) -> str:
     "returns song lyrics parsed from the given url"
@@ -88,21 +98,26 @@ def get_lyrics(url: str) -> str:
 
 
 def download_lyrics(download_dir: str, count: int, base_url: str):
-    '''downloads song lyrics into artist directory inside given download_dir'''
+    """downloads song lyrics into artist directory inside given download_dir"""
     artists = get_artists("https://www.songlyrics.com/top-artists-lyrics.html", count)
-    
+
     for artist, url in artists.items():
         song_list = get_song_list(url, count)
-        for song, url in  song_list.items():
+        for song, url in song_list.items():
             artist_name = generate_name(artist)
             os.makedirs(os.path.join(download_dir, artist_name), exist_ok=True)
             song_name = generate_name(song)
-            with open(os.path.join(download_dir, artist_name, f'{song_name}.txt'), 'w') as f:
+            with open(
+                os.path.join(download_dir, artist_name, f"{song_name}.txt"), "w"
+            ) as f:
                 byte_count = f.write(get_lyrics(url))
                 if byte_count < 5:
-                    logger.warn(' %s too small', str(os.path.join(download_dir, artist_name, f'{song_name}.txt')))
-
-
+                    logger.warn(
+                        " %s too small",
+                        str(
+                            os.path.join(download_dir, artist_name, f"{song_name}.txt")
+                        ),
+                    )
 
 
 def main():
@@ -112,6 +127,8 @@ def main():
     else:
         configure_logging(logging.INFO)
 
-    download_lyrics('artists', args.count, args.url) 
+    download_lyrics("artists", args.count, args.url)
+
+
 if __name__ == "__main__":
     main()
