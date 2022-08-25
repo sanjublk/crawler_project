@@ -1,3 +1,5 @@
+-- Adds drops and creates songs, artists table
+
 DROP TABLE IF EXISTS songs;
 DROP TABLE IF EXISTS artists;
 

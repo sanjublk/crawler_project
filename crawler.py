@@ -5,6 +5,10 @@ import os
 from bs4 import BeautifulSoup
 import requests
 
+import db
+import sa
+import web
+
 logger = None
 
 
@@ -17,24 +21,18 @@ def generate_name(name: str) -> str:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Web crawler")
+    parser = argparse.ArgumentParser(description="Web crawler", add_help=True)
     parser.add_argument(
         "-d", "--debug", help="Enable debug logging", action="store_true"
     )
-    parser.add_argument(
-        "-c",
-        "--count",
-        type=int,
-        help="Number of artists and songs to crawl",
-        default=2,
-    )
-    parser.add_argument(
-        "-u",
-        "--url",
-        type=str,
-        help="Base url for artist list",
-        default="https://www.songlyrics.com/top-artists-lyrics.html",
-    )
+    sub_commands = parser.add_subparsers(help="sub-commands", dest="command")
+    initdb_parser = sub_commands.add_parser('initdb', help='initiate database', )
+    crawl_parser = sub_commands.add_parser('crawl', help='start crawling')
+    web_parser = sub_commands.add_parser('web', help='starting web server')
+    crawl_parser.add_argument('-c', '--count', type=int, help='Number of artists and songs to crawl', default=2)
+    crawl_parser.add_argument('-ac', '--artists-count', type=int, help='specify number of artists to crawl', default=2)
+    crawl_parser.add_argument('-sc', '--songs-count', type=int, help='specify number of songs to crawl', default=2)
+    crawl_parser.add_argument('-u', '--url', help='Url for artist list', default='https://www.songlyrics.com/top-artists-lyrics.html')
     return parser.parse_args()
 
 
@@ -51,7 +49,7 @@ def configure_logging(level=logging.INFO):
     logger.addHandler(screen_handler)
 
 
-def get_artists(base: str, count: int = 2) -> dict:
+def get_artists(base: str, artists_count: int) -> dict:
     """returns a dictionary of artists with the url to their song list"""
     artists = {}
     logger.debug(f"requesting {base} ...")
@@ -62,12 +60,18 @@ def get_artists(base: str, count: int = 2) -> dict:
     headings = tracklist.find_all("h3")
     if not headings:
         logger.debug("could'nt parse headings successfully")
-    for heading in headings[0:count]:
+
+    if artists_count > len(headings):
+        artists_count = len(headings)
+        logger.debug('count greater than total no. of artists\nreset to maximum available numbers')
+
+
+    for heading in headings[0:artists_count]:
         artists[heading.text] = heading.a["href"]
     return artists
 
 
-def get_song_list(url: str, count: int = 2) -> dict:
+def get_song_list(url: str, songs_count) -> dict:
     """returns a dictionary of songs with the url to the song lyrics"""
     songs = {}
     logger.debug(f"requesting {url} ...")
@@ -78,7 +82,10 @@ def get_song_list(url: str, count: int = 2) -> dict:
     links = tracklist.find_all("a")
     if not links:
         logger.debug("could'nt parse headings successfully")
-    for link in links[0:count]:
+    if songs_count > len(links):
+        songs_count = len(links)
+        logger.debug('count greater than total no. of songs available\nreset to maximum available numbers')
+    for link in links[0:songs_count]:
         songs[link.text] = link["href"]
     return songs
 
@@ -119,15 +126,50 @@ def download_lyrics(download_dir: str, count: int, base_url: str):
                         ),
                     )
 
+def insert_lyrics_to_database(url, artists_count, songs_count):
+    artists = get_artists(url, artists_count)
+    conn = db.get_connection()
+    for artist, url in artists.items():
+        song_list = get_song_list(url, songs_count)
+        artist_name = generate_name(artist)
+        artist_id = db.add_artist(conn, artist_name)
+        for song, url in song_list.items():
+            song_name = generate_name(song)
+            lyrics = get_lyrics(url)
+            db.add_song(conn, song_name, artist_id, lyrics)
+    conn.close()
+
+def insert_lyrics_to_database_sa(url, artists_count, songs_count):
+    artists = get_artists(url, artists_count)
+    session = sa.session()
+    for artist, url in artists.items():
+        song_list = get_song_list(url, songs_count)
+        artist_name = generate_name(artist)
+        artist = sa.add_artist(session, artist_name)
+        for song, url in song_list.items():
+            song_name = generate_name(song)
+            lyrics = get_lyrics(url)
+            sa.add_song(session, song_name, lyrics, artist)
+    session.commit()
+    session.close()
+
 
 def main():
     args = parse_args()
     if args.debug:
-        configure_logging()
+        configure_logging(logging.DEBUG)
     else:
         configure_logging(logging.INFO)
 
-    download_lyrics("artists", args.count, args.url)
+    if args.command == 'crawl':
+        insert_lyrics_to_database_sa(args.url, args.artists_count, args.songs_count)
+    
+    elif args.command == 'initdb':
+        db.initdb()
+    
+    elif args.command == 'web':
+        web.app.run()
+
 
 
 if __name__ == "__main__":
