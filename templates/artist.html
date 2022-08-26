@@ -1,17 +1,19 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}{{artist_name}} {% endblock %}
+{% block content %}
+
+<nav class="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active"><a href="/">Artists</a></li>
+        <li class="breadcrumb-item">Songs</li>
+    </ol>
+</nav>
+
     <h1>{{artist_name}}</h1>
     <ul>
         {% for song in songs %}
-        <li><a href="{{url_for('song', song_id=song.id)}}">{{song.name}}</a></li>        
-
+        <li><a class="dark" href="{{url_for('song', song_id=song.id)}}">{{song.name}}</a></li>        
         {% endfor %}
     </ul>
-</body>
-</html>
+{{ super() }}
+{% endblock %}
