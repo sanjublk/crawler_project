@@ -1,17 +1,44 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>song lyrics</title>
-</head>
-<body>
-    <div>
+{% extends 'base.html' %}
+{% block title %} Song lyrics {% endblock %}
+<nav class="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Artists</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('artist', artist_id=artist.id) }}">Songs</a></li>
+        <li class="breadcrumb-item active">Lyrics</li>
+    </ol>
+</nav>
+    {% block sidebar %}
+    <ul>
+       {% for song in songs %} 
+       {% if song.id != song_id %}
+       <li><a href="{{url_for('song', song_id=song.id)}}">{{song.name}}</a></li>
+       {% else %}
+       <li>{{song.name}}</li>
+       {% endif %}
+       {% endfor %}
+    </ul>
+    {% endblock %}
+
+    {% block content %}
     <h1>{{song_name}}</h1>
     {% autoescape false %}
+    <div class="ms-2">
+    <p>author:<a href="{{ url_for('artist', artist_id=artist.id) }}">{{artist.name}}</a></p>
     {{lyrics}}
     {% endautoescape %}
     </div>
-</body>
-</body>
-</html>
+
+    <nav>
+        <ul class="pagination">
+            {% if previous_song_id %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('song', song_id=previous_song_id) }}">Previous</a></li>
+            {% endif %}
+
+            {% if next_song_id %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('song', song_id=next_song_id) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+{{super()}}
+{% endblock %}
