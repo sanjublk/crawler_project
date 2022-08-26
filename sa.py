@@ -36,13 +36,12 @@ def create_tables(engine):
     Base.metadata.create_all(engine)
 
 def drop_all_table(engine):
-    Base.metadata.create_all(engine, checkfirst=True)
     Base.metadata.drop_all(bind=engine, )
 
 def initdb():
     engine = get_engine()
     drop_all_table(engine)
-    create_engine(engine)
+    create_tables(engine)
 
 
 def add_artist(session: Session, artist_name) -> Artists:
