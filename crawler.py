@@ -144,12 +144,10 @@ def insert_lyrics_to_database_sa(url, artists_count, songs_count):
     session = sa.session()
     for artist, url in artists.items():
         song_list = get_song_list(url, songs_count)
-        artist_name = generate_name(artist)
-        artist = sa.add_artist(session, artist_name)
+        artist = sa.add_artist(session, artist)
         for song, url in song_list.items():
-            song_name = generate_name(song)
             lyrics = get_lyrics(url)
-            sa.add_song(session, song_name, lyrics, artist)
+            sa.add_song(session, song, lyrics, artist)
     session.commit()
     session.close()
 
@@ -165,7 +163,8 @@ def main():
         insert_lyrics_to_database_sa(args.url, args.artists_count, args.songs_count)
     
     elif args.command == 'initdb':
-        db.initdb()
+        #db.initdb()
+        sa.initdb()
     
     elif args.command == 'web':
         web.app.run()
