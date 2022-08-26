@@ -54,14 +54,35 @@ def artist(artist_id):
 
 @app.route('/song/<int:song_id>')
 def song(song_id):
-    # lyrics = sa.get_lyrics(session, song_id)
+    
     song = Songs.query.get(song_id)
-    song_name = song.name
+    previous_id = song_id
     lyrics = song.lyrics
     lyrics = lyrics.replace('\n', '<br>')
+    previous, next_ = get_prev_next(song_id, song.artist.songs)
+    return render_template(
+        'song.html',
+        lyrics=lyrics,
+        song_name=song.name,
+        artist=song.artist,
+        songs=song.artist.songs,
+        song_id=song_id,
+        previous_song_id = previous,
+        next_song_id = next_
+        )
+    # lyrics = sa.get_lyrics(session, song_id)
+    # songs = Songs.query.all()
     # return jsonify({'name': song_name, 'lyrics': lyrics}, )
-    return render_template('song.html', lyrics=lyrics, song_name=song_name, artist=song.artist)
 
 
 
-
+def get_prev_next(id, songs):
+    if songs[0].id == id:
+        return None, songs[1].id
+    elif songs[-1].id == id:
+        return songs[-2].id, None
+    else:
+        for index, song in enumerate(songs):
+            if song.id == id:
+                previous, next_ = songs[index-1].id, songs[index+1].id
+        return previous, next_    
