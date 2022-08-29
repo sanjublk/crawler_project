@@ -1,9 +1,9 @@
 from flask import Flask, render_template, json, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
+import flask_accept
 # import sa
 
 app = Flask('crawler')
-# session = sa.session()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///lyrics'
 app.config['JSON_SORT_KEYS'] = False
 db = SQLAlchemy(app)
@@ -53,11 +53,13 @@ def artist(artist_id):
 
 
 @app.route('/song/<int:song_id>')
+@flask_accept.accept('text/html')
 def song(song_id):
     
     song = Songs.query.get(song_id)
     previous_id = song_id
     lyrics = song.lyrics
+    # songs = song.artist.songs.order_by("id desc")
     previous, next_ = get_prev_next(song_id, song.artist.songs)
     return render_template(
         'song.html',
@@ -73,6 +75,20 @@ def song(song_id):
     # songs = Songs.query.all()
     # return jsonify({'name': song_name, 'lyrics': lyrics}, )
 
+
+@song.support('application/json')
+def song_json(song_id):
+    song = Songs.query.get(song_id)
+    prev, next_ = get_prev_next(song.id, song.artist.songs)
+    return jsonify(
+        {'id':song.id,
+        'name': song.name, 
+        'lyrics': song.lyrics,
+        'previous': prev, 
+        'next': next_}
+        )
+
+
 @app.route('/lyrics/<int:song_id>')
 def lyrics(song_id):
     song = Songs.query.get(song_id)
@@ -87,8 +103,9 @@ def lyrics(song_id):
 
 
 
-
 def get_prev_next(id, songs):
+    print("songs[0]: ", songs[0].id)
+    print("id: ", id)
     if songs[0].id == id:
         return None, songs[1].id
     elif songs[-1].id == id:

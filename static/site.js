@@ -2,9 +2,12 @@ function fetchLyrics(e) {
   e.preventDefault();
 //   e.target.removeEventListener("click", fetchLyrics);
 //   e.target.addEventListener("click", () => e.preventDefault());
-  let url = $(e.target).attr("href").replace("song", "lyrics");
+  // let url = $(e.target).attr("href").replace("song", "lyrics");
   $.ajax({
-    url: url,
+    // url: url,
+    url: $(e.target).attr("href"),
+    headers: {          
+    Accept: "application/json; charset=utf-8"},
     success: (data) => changeLyrics(data, e.target),
   });
 }
