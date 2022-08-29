@@ -51,7 +51,7 @@ function changeButtons(next, prev) {
 
 
 function nextPrev(e, v) {
-  console.log("meh");
+  console.log("inside nextPrev")
   e.preventDefault();
   goToTop();
   let currentSongId = $("#current").attr("songId");
@@ -76,8 +76,11 @@ function nextPrev(e, v) {
           $(element).html(data.name);
           $(element).attr({ songId: data.id, id: "current" });
         }
-        changeButtons(data.next, data.previous);
+        
       });
+      console.log(data.next)
+      console.log(data.previous)
+      changeButtons(data.next, data.previous);
     },
   });
 }
