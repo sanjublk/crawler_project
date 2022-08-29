@@ -1,5 +1,6 @@
-from flask import Flask, render_template, json, jsonify
+from flask import Flask, render_template, json, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
+import time
 # import sa
 
 app = Flask('crawler')
@@ -58,7 +59,6 @@ def song(song_id):
     song = Songs.query.get(song_id)
     previous_id = song_id
     lyrics = song.lyrics
-    lyrics = lyrics.replace('\n', '<br>')
     previous, next_ = get_prev_next(song_id, song.artist.songs)
     return render_template(
         'song.html',
@@ -73,6 +73,20 @@ def song(song_id):
     # lyrics = sa.get_lyrics(session, song_id)
     # songs = Songs.query.all()
     # return jsonify({'name': song_name, 'lyrics': lyrics}, )
+
+@app.route('/lyrics/<int:song_id>')
+def lyrics(song_id):
+    song = Songs.query.get(song_id)
+    prev, next_ = get_prev_next(song.id, song.artist.songs)
+    time.sleep(4)
+    return jsonify(
+        {'id':song.id,
+        'name': song.name, 
+        'lyrics': song.lyrics,
+        'previous': prev, 
+        'next': next_}
+        )
+
 
 
 

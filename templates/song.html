@@ -1,44 +1,52 @@
 {% extends 'base.html' %}
 {% block title %} Song lyrics {% endblock %}
-<nav class="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Artists</a></li>
-        <li class="breadcrumb-item"><a href="{{ url_for('artist', artist_id=artist.id) }}">Songs</a></li>
-        <li class="breadcrumb-item active">Lyrics</li>
-    </ol>
-</nav>
+
     {% block sidebar %}
-    <ul>
+    <ul id="sideBarUl">
        {% for song in songs %} 
        {% if song.id != song_id %}
-       <li><a href="{{url_for('song', song_id=song.id)}}">{{song.name}}</a></li>
+       <li songId="{{song.id}}"><a class="songList"  href="{{url_for('lyrics', song_id=song.id)}}">{{song.name}}</a></li>
        {% else %}
-       <li>{{song.name}}</li>
+       <li songId="{{song.id}}" id="current">{{song.name}}</li>
        {% endif %}
        {% endfor %}
     </ul>
     {% endblock %}
 
     {% block content %}
-    <h1>{{song_name}}</h1>
+    <nav class="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Artists</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('artist', artist_id=artist.id) }}">Songs</a></li>
+        <li class="breadcrumb-item active">Lyrics</li>
+    </ol>
+    </nav>
+    <h1 class="songName">{{song_name}}</h1>
     {% autoescape false %}
-    <div class="ms-2">
+    <div class="ms-2 songLyrics">
     <p>author:<a href="{{ url_for('artist', artist_id=artist.id) }}">{{artist.name}}</a></p>
-    {{lyrics}}
+    <p id="lyrics">{{lyrics.replace("\n", "<br/>")}}</p>
     {% endautoescape %}
     </div>
 
     <nav>
         <ul class="pagination">
             {% if previous_song_id %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('song', song_id=previous_song_id) }}">Previous</a></li>
+            <li class="page-item"><a id="previousSong" class="page-link " href="{{ url_for('song', song_id=previous_song_id) }}">Previous</a></li>
+            {% else %}
+            <li class="page-item" style="display: none;" ><a id="previousSong" class="page-link "  href="">Previous</a></li>
             {% endif %}
-
             {% if next_song_id %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('song', song_id=next_song_id) }}">Next</a></li>
+            <li  class="page-item"><a id="nextSong" class="page-link " href="{{ url_for('song', song_id=next_song_id) }}">Next</a></li>
+            {% else %}
+            <li class="page-item" style="display: none;" ><a  id="nextSong" class="page-link "  href="">Next</a></li>
             {% endif %}
         </ul>
     </nav>
 
 {{super()}}
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('static', filename='site.js')}}"></script>
 {% endblock %}
