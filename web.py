@@ -103,15 +103,33 @@ def lyrics(song_id):
 
 
 
+# def get_prev_next(id, songs):
+#     print("songs[0]: ", songs[0].id)
+#     print("id: ", id)
+#     if songs[0].id == id:
+#         return None, songs[1].id
+#     elif songs[-1].id == id:
+#         return songs[-2].id, None
+#     else:
+#         for index, song in enumerate(songs):
+#             if song.id == id:
+#                 previous, next_ = songs[index-1].id, songs[index+1].id
+#         return previous, next_    
+
+
 def get_prev_next(id, songs):
-    print("songs[0]: ", songs[0].id)
-    print("id: ", id)
-    if songs[0].id == id:
-        return None, songs[1].id
-    elif songs[-1].id == id:
-        return songs[-2].id, None
+    current_index = None
+    for index, song in enumerate(songs):
+        if song.id == id:
+            current_index = index
+
+    if current_index == 0:
+        print(None, songs[current_index+1].id)
+        return None, songs[current_index+1].id
+    elif current_index == len(songs) - 1:
+        print(songs[current_index - 1].id, None)
+        return songs[current_index - 1].id, None
     else:
-        for index, song in enumerate(songs):
-            if song.id == id:
-                previous, next_ = songs[index-1].id, songs[index+1].id
-        return previous, next_    
+        print(songs[current_index-1].id, songs[current_index+1].id)
+        return songs[current_index-1].id, songs[current_index+1].id
+ 
